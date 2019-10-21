@@ -30,7 +30,7 @@ final class WP_Term_Order {
 	/**
 	 * @var string Database version
 	 */
-	public $db_version = 201910210001;
+	public $db_version = 201910210003;
 
 	/**
 	 * @var string Database version
@@ -581,8 +581,8 @@ final class WP_Term_Order {
 		$old_version = (int) $old_version;
 
 		// The main column alter
-		if ( !$old_version || $old_version < $this->db_version ) {
-			$wpdb->query( "ALTER TABLE `{$wpdb->term_taxonomy}` ADD `wp_term_order` INT (11) NOT NULL DEFAULT 0;" );
+		if ( $old_version < $this->db_version ) {
+			$wpdb->query( "ALTER TABLE `{$wpdb->terms}` ADD `wp_term_order` INT (11) NOT NULL DEFAULT 0;" );
 		}
 
 		// Update the DB version, not autoloaded
@@ -672,7 +672,7 @@ final class WP_Term_Order {
 			'depth'      => 1,
 			'number'     => 100,
 			'parent'     => $parent_id,
-			'orderby'    => 'term_order',
+			'orderby'    => 'wp_term_order',
 			'order'      => 'ASC',
 			'hide_empty' => false,
 			'exclude'    => $excluded
@@ -752,7 +752,7 @@ final class WP_Term_Order {
 			$children = get_terms( $taxonomy, array(
 				'number'     => 1,
 				'depth'      => 1,
-				'orderby'    => 'term_order',
+				'orderby'    => 'wp_term_order',
 				'order'      => 'ASC',
 				'parent'     => $term->term_id,
 				'fields'     => 'ids',
