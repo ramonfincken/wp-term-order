@@ -22,7 +22,7 @@ No. There are no new database tables with this plugin.
 
 ### Does this modify existing database tables?
 
-No. It uses the WP Core `term_order` colum in the `terms` table
+Yes. It uses the new `wp_term_order` colum in the `terms` table
 
 ### Can I query and sort by `order`?
 
@@ -33,7 +33,7 @@ $terms = get_terms( 'category', array(
 	'depth'      => 1,
 	'number'     => 100,
 	'parent'     => 0,
-	'orderby'    => 'term_order', // <--- Looky looky!
+	'orderby'    => 'wp_term_order', // <--- Looky looky!
 	'order'      => 'ASC',
 	'hide_empty' => false,
 ) );
