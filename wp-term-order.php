@@ -30,11 +30,10 @@ final class WP_Term_Order {
 	/**
 	 * @var string Database version
 	 */
-	public $db_version = 201510280002;
+	public $db_version = 201910210001;
 
 	/**
 	 * @var string Database version
-	 * @deprecated
 	 */
 	public $db_version_key = 'wpdb_term_taxonomy_version';
 
@@ -140,7 +139,7 @@ final class WP_Term_Order {
 	public function admin_init() {
 
 		// Check for DB update
-		/// $this->maybe_upgrade_database();
+        $this->maybe_upgrade_database();
 	}
 
 	/**
@@ -381,7 +380,7 @@ final class WP_Term_Order {
 		$wpdb->update(
 			$wpdb->terms,
 			array(
-				'term_order' => $order
+				'wp_term_order' => $order
 			),
 			array(
 				'term_id'  => $term_id,
@@ -411,8 +410,8 @@ final class WP_Term_Order {
 		$retval = 0;
 
 		// Use term_order column if set
-		if ( isset( $term->term_order ) ) {
-		    $retval = $term->term_order;
+		if ( isset( $term->wp_term_order ) ) {
+		    $retval = $term->wp_term_order;
 		}
 
 		// Cast & return
@@ -453,7 +452,7 @@ final class WP_Term_Order {
 	private static function get_next_term_order( $taxonomy = '' ) {
 	    global $wpdb, $tax;
 	    
-	    $sql = $wpdb->prepare( 'SELECT MAX(term_order) FROM '.$wpdb->terms . ' WHERE term_id IN ( SELECT term_id FROM '.$wpdb->term_taxonomy . ' WHERE taxonomy = %s )', $tax->name );
+	    $sql = $wpdb->prepare( 'SELECT MAX(wp_term_order) FROM '.$wpdb->terms . ' WHERE term_id IN ( SELECT term_id FROM '.$wpdb->term_taxonomy . ' WHERE taxonomy = %s )', $tax->name );
 	    
 	    $the_max = $wpdb->get_var( $sql );
 	    if( $the_max && intval( $the_max ) >= 0 ) {
@@ -523,8 +522,7 @@ final class WP_Term_Order {
 	/** Query Filters *********************************************************/
 
 	/**
-	 * Force `orderby` to `tt.order` if not explicitly set to something else
-	 * @deprecated use 'orderby'    => 'term_order' in your get_terms()
+	 * Force `orderby` to `tt.wp_term_order` if not explicitly set to something else
 	 * @since 0.1.0
 	 *
 	 * @param  string $orderby
@@ -538,8 +536,8 @@ final class WP_Term_Order {
 		}
 
 		// Maybe force `orderby`
-		if ( empty( $args['orderby'] ) || empty( $orderby ) || ( 'term_order' === $args['orderby'] ) || in_array( $orderby, array( 'name', 't.name' ) ) ) {
-			$orderby = 't.term_order ';
+		if ( empty( $args['orderby'] ) || empty( $orderby ) || ( 'wp_term_order' === $args['orderby'] ) || in_array( $orderby, array( 'name', 't.name' ) ) ) {
+			$orderby = 't.wp_term_order ';
 		} elseif ( 't.name' === $orderby ) {
 			$orderby = 'tt.order, t.name';
 		}
@@ -552,7 +550,6 @@ final class WP_Term_Order {
 
 	/**
 	 * Should a database update occur
-	 * @deprecated
 	 *
 	 * @since 0.1.0
 	 *
@@ -561,7 +558,7 @@ final class WP_Term_Order {
 	private function maybe_upgrade_database() {
 
 		// Check DB for version
-		$db_version = get_option( $this->db_version_key );
+		$db_version = get_option( $this->db_version_key, 0 );
 
 		// Needs
 		if ( $db_version < $this->db_version ) {
@@ -570,8 +567,7 @@ final class WP_Term_Order {
 	}
 
 	/**
-	 * Modify the `term_taxonomy` table and add an `order` column to it
-	 * @deprecated
+	 * Modify the `term_taxonomy` table and add an `wp_term_order` column to it
 	 * 
 	 * @since 0.1.0
 	 *
@@ -585,11 +581,11 @@ final class WP_Term_Order {
 		$old_version = (int) $old_version;
 
 		// The main column alter
-		if ( $old_version < 201508110005 ) {
-			$wpdb->query( "ALTER TABLE `{$wpdb->term_taxonomy}` ADD `order` INT (11) NOT NULL DEFAULT 0;" );
+		if ( !$old_version || $old_version < $this->db_version ) {
+			$wpdb->query( "ALTER TABLE `{$wpdb->term_taxonomy}` ADD `wp_term_order` INT (11) NOT NULL DEFAULT 0;" );
 		}
 
-		// Update the DB version
+		// Update the DB version, not autoloaded
 		update_option( $this->db_version_key, $this->db_version, false );
 	}
 
